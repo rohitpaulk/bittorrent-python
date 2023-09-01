@@ -39,6 +39,17 @@ def do_decode(bencoded_str_io):
         assert bencoded_str_io.read(1) == b"e" # consume the "e"
 
         return values
+    elif first_byte == b"d":
+        keys = []
+        values = []
+
+        while bencoded_str_io.peek(1) != b"e":
+            keys.append(do_decode(bencoded_str_io).decode())
+            values.append(do_decode(bencoded_str_io))
+
+        assert bencoded_str_io.read(1) == b"e" # consume the "e"
+
+        return dict(zip(keys, values))
     else:
         raise NotImplementedError(f"Unhandled first_char: {first_byte}")
 

@@ -33,7 +33,7 @@ def main():
 
         print(f"Tracker URL: {torrent_file_dict['announce'].decode()}")
         print(f"Length: {torrent_file_dict['info']['length']}")
-        print(f"Info hash: {info_hash}")
+        print(f"Info Hash: {info_hash}")
     else:
         raise NotImplementedError(f"Unknown command {command}")
 

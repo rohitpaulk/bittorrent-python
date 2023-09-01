@@ -30,6 +30,15 @@ def do_decode(bencoded_str_io):
             integer_str += byte
 
         return int(integer_str)
+    elif first_byte == b"l":
+        values = []
+
+        while bencoded_str_io.peek(1) != b"e":
+            values.append(do_decode(bencoded_str_io))
+
+        assert bencoded_str_io.read(1) == b"e" # consume the "e"
+
+        return values
     else:
         raise NotImplementedError(f"Unhandled first_char: {first_byte}")
 
@@ -39,7 +48,7 @@ def do_decode(bencoded_str_io):
 # - decode_bencode("5:hello") -> "hello"
 # - decode_bencode("10:hello12345") -> "hello12345"
 def decode(bencoded_value):
-    bencoded_str_io = io.BytesIO(bencoded_value)
+    bencoded_str_io = io.BufferedReader(io.BytesIO(bencoded_value))
 
     return do_decode(bencoded_str_io)
 

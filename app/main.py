@@ -33,7 +33,7 @@ def do_decode(bencoded_str_io):
     elif first_byte == b"l":
         values = []
 
-        while bencoded_str_io.peek(1) != b"e":
+        while bencoded_str_io.peek(1)[0] != b"e":
             values.append(do_decode(bencoded_str_io))
 
         assert bencoded_str_io.read(1) == b"e"  # consume the "e"
@@ -43,7 +43,7 @@ def do_decode(bencoded_str_io):
         keys = []
         values = []
 
-        while bencoded_str_io.peek(1) != b"e":
+        while bencoded_str_io.peek(1)[0] != b"e":
             keys.append(do_decode(bencoded_str_io).decode())
             values.append(do_decode(bencoded_str_io))
 

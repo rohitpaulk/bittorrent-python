@@ -29,8 +29,7 @@ def main():
         torrent_file_path = sys.argv[2]
         torrent_file_contents = open(torrent_file_path, "rb").read()
         torrent_file_dict = decode(torrent_file_contents)
-        torrent_file_info_dict = torrent_file_dict["info"]
-        info_hash = hashlib.sha1(encode(torrent_file_info_dict)).hexdigest()
+        info_hash = hashlib.sha1(encode(torrent_file_dict["info"])).hexdigest()
 
         print(f"Tracker URL: {torrent_file_dict['announce'].decode()}")
         print(f"Length: {torrent_file_dict['info']['length']}")

@@ -86,7 +86,7 @@ def main():
         torrent_file_contents = open(torrent_file_path, "rb").read()
         torrent_file_dict = decode(torrent_file_contents)
 
-        print(f"Tracker URL: {torrent_file_dict['announce']}")
+        print(f"Tracker URL: {torrent_file_dict['announce'].decode()}")
     else:
         raise NotImplementedError(f"Unknown command {command}")
 

@@ -87,6 +87,7 @@ def main():
         torrent_file_dict = decode(torrent_file_contents)
 
         print(f"Tracker URL: {torrent_file_dict['announce'].decode()}")
+        print(f"Length: {torrent_file_dict['info']['length']}")
     else:
         raise NotImplementedError(f"Unknown command {command}")
 

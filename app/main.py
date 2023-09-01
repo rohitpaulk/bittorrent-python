@@ -36,7 +36,7 @@ def do_decode(bencoded_str_io):
         while bencoded_str_io.peek(1) != b"e":
             values.append(do_decode(bencoded_str_io))
 
-        assert bencoded_str_io.read(1) == b"e" # consume the "e"
+        assert bencoded_str_io.read(1) == b"e"  # consume the "e"
 
         return values
     elif first_byte == b"d":
@@ -47,7 +47,7 @@ def do_decode(bencoded_str_io):
             keys.append(do_decode(bencoded_str_io).decode())
             values.append(do_decode(bencoded_str_io))
 
-        assert bencoded_str_io.read(1) == b"e" # consume the "e"
+        assert bencoded_str_io.read(1) == b"e"  # consume the "e"
 
         return dict(zip(keys, values))
     else:
@@ -81,6 +81,12 @@ def main():
             raise TypeError(f"Type not serializable: {type(data)}")
 
         print(json.dumps(decode(bencoded_value), default=bytes_to_str))
+    elif command == "info":
+        torrent_file_path = sys.argv[2]
+        torrent_file_contents = open(torrent_file_path, "rb").read()
+        torrent_file_dict = decode(torrent_file_contents)
+
+        print(f"Tracker URL: {torrent_file_dict['announce']}")
     else:
         raise NotImplementedError(f"Unknown command {command}")
 

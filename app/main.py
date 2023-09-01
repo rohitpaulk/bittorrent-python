@@ -1,3 +1,4 @@
+import io
 import json
 import sys
 
@@ -5,16 +6,42 @@ import sys
 # import requests - available if you need it!
 
 
+def do_decode(bencoded_str_io):
+    first_byte = bencoded_str_io.read(1)
+
+    if first_byte.isdigit():
+        length_str = first_byte
+
+        while True:
+            byte = bencoded_str_io.read(1)
+            if byte == b":":
+                break
+            length_str += byte
+
+        length = int(length_str)
+        return bencoded_str_io.read(length)
+    elif first_byte == b"i":
+        integer_str = b""
+
+        while True:
+            byte = bencoded_str_io.read(1)
+            if byte == b"e":
+                break
+            integer_str += byte
+
+        return int(integer_str)
+    else:
+        raise NotImplementedError(f"Unhandled first_char: {first_byte}")
+
+
 # Examples:
 #
 # - decode_bencode("5:hello") -> "hello"
 # - decode_bencode("10:hello12345") -> "hello12345"
-def decode_bencode(bencoded_value):
-    if chr(bencoded_value[0]).isdigit():
-        length = int(bencoded_value.split(b":")[0])
-        return bencoded_value.split(b":")[1][:length]
-    else:
-        raise NotImplementedError("Only strings are supported at the moment")
+def decode(bencoded_value):
+    bencoded_str_io = io.BytesIO(bencoded_value)
+
+    return do_decode(bencoded_str_io)
 
 
 def main():
@@ -33,7 +60,7 @@ def main():
 
             raise TypeError(f"Type not serializable: {type(data)}")
 
-        print(json.dumps(decode_bencode(bencoded_value), default=bytes_to_str))
+        print(json.dumps(decode(bencoded_value), default=bytes_to_str))
     else:
         raise NotImplementedError(f"Unknown command {command}")
 

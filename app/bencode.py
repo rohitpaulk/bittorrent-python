@@ -63,7 +63,7 @@ def encode(value):
     if isinstance(value, str):
         return f"{len(value)}:{value}".encode()
     if isinstance(value, bytes):
-        return b"{0}{1}{2}" % [len(value), b":", value]
+        return b"".join(len(value), b":", value)
     elif isinstance(value, int):
         return f"i{value}e".encode()
     elif isinstance(value, list):

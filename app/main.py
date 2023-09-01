@@ -30,10 +30,16 @@ def main():
         torrent_file_contents = open(torrent_file_path, "rb").read()
         torrent_file_dict = decode(torrent_file_contents)
         info_hash = hashlib.sha1(encode(torrent_file_dict["info"])).hexdigest()
+        piece_length = torrent_file_dict["info"]["piece length"]
 
         print(f"Tracker URL: {torrent_file_dict['announce'].decode()}")
         print(f"Length: {torrent_file_dict['info']['length']}")
         print(f"Info Hash: {info_hash}")
+        print(f"Piece Length: {piece_length}")
+
+        print("Piece Hashes:")
+        for i in range(0, len(torrent_file_dict["info"]["pieces"]), 20):
+            print(torrent_file_dict["info"]["pieces"][i : i + 20].hex())
     else:
         raise NotImplementedError(f"Unknown command {command}")
 

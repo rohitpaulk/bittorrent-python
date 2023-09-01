@@ -1,67 +1,11 @@
-import io
+import hashlib
 import json
 import sys
 
 # import bencodepy - available if you need it!
 # import requests - available if you need it!
 
-
-def do_decode(bencoded_str_io):
-    first_byte = bencoded_str_io.read(1)
-
-    if first_byte.isdigit():
-        length_str = first_byte
-
-        while True:
-            byte = bencoded_str_io.read(1)
-            if byte == b":":
-                break
-            length_str += byte
-
-        length = int(length_str)
-        return bencoded_str_io.read(length)
-    elif first_byte == b"i":
-        integer_str = b""
-
-        while True:
-            byte = bencoded_str_io.read(1)
-            if byte == b"e":
-                break
-            integer_str += byte
-
-        return int(integer_str)
-    elif first_byte == b"l":
-        values = []
-
-        while chr(bencoded_str_io.peek(1)[0]) != "e":
-            values.append(do_decode(bencoded_str_io))
-
-        assert bencoded_str_io.read(1) == b"e"  # consume the "e"
-
-        return values
-    elif first_byte == b"d":
-        keys = []
-        values = []
-
-        while chr(bencoded_str_io.peek(1)[0]) != "e":
-            keys.append(do_decode(bencoded_str_io).decode())
-            values.append(do_decode(bencoded_str_io))
-
-        assert bencoded_str_io.read(1) == b"e"  # consume the "e"
-
-        return dict(zip(keys, values))
-    else:
-        raise NotImplementedError(f"Unhandled first_char: {first_byte}")
-
-
-# Examples:
-#
-# - decode_bencode("5:hello") -> "hello"
-# - decode_bencode("10:hello12345") -> "hello12345"
-def decode(bencoded_value):
-    bencoded_str_io = io.BufferedReader(io.BytesIO(bencoded_value))
-
-    return do_decode(bencoded_str_io)
+from .bencode import decode, encode
 
 
 def main():
@@ -85,9 +29,12 @@ def main():
         torrent_file_path = sys.argv[2]
         torrent_file_contents = open(torrent_file_path, "rb").read()
         torrent_file_dict = decode(torrent_file_contents)
+        torrent_file_info_dict = torrent_file_dict["info"]
+        info_hash = hashlib.sha1(encode(torrent_file_info_dict)).hexdigest()
 
         print(f"Tracker URL: {torrent_file_dict['announce'].decode()}")
         print(f"Length: {torrent_file_dict['info']['length']}")
+        print(f"Info hash: {info_hash}")
     else:
         raise NotImplementedError(f"Unknown command {command}")
 

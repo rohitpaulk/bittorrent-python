@@ -1,11 +1,16 @@
 import hashlib
 import json
 import sys
+import socket
+
+from dataclasses import dataclass
 
 # import bencodepy - available if you need it!
-# import requests - available if you need it!
+import requests
 
 from .bencode import decode, encode
+from .peer import Peer
+from .torrent import Torrent
 
 
 def main():
@@ -27,19 +32,39 @@ def main():
         print(json.dumps(decode(bencoded_value), default=bytes_to_str))
     elif command == "info":
         torrent_file_path = sys.argv[2]
-        torrent_file_contents = open(torrent_file_path, "rb").read()
-        torrent_file_dict = decode(torrent_file_contents)
-        info_hash = hashlib.sha1(encode(torrent_file_dict["info"])).hexdigest()
-        piece_length = torrent_file_dict["info"]["piece length"]
+        torrent = Torrent.from_file(torrent_file_path)
 
-        print(f"Tracker URL: {torrent_file_dict['announce'].decode()}")
-        print(f"Length: {torrent_file_dict['info']['length']}")
-        print(f"Info Hash: {info_hash}")
-        print(f"Piece Length: {piece_length}")
+        print(f"Tracker URL: {torrent.tracker_url}")
+        print(f"Length: {torrent.length_in_bytes}")
+        print(f"Info Hash: {torrent.info_hash.hex()}")
+        print(f"Piece Length: {torrent.piece_length_in_bytes}")
 
         print("Piece Hashes:")
-        for i in range(0, len(torrent_file_dict["info"]["pieces"]), 20):
-            print(torrent_file_dict["info"]["pieces"][i : i + 20].hex())
+        for piece_hash in torrent.piece_hashes:
+            print(piece_hash.hex())
+    elif command == "peers":
+        torrent_file_path = sys.argv[2]
+        torrent = Torrent.from_file(torrent_file_path)
+
+        response = requests.get(
+            torrent.tracker_url,
+            params={
+                "info_hash": torrent.info_hash,
+                "peer_id": "00112233445566778899",
+                "port": "6881",
+                "uploaded": "0",
+                "downloaded": "0",
+                "left": torrent.length_in_bytes,
+                "compact": "1",
+            },
+        )
+
+        response_dict = decode(response.content)
+
+        encoded_peers = response_dict["peers"]
+        peers = Peer.list_from_bytes(response_dict["peers"])
+        for peer in peers:
+            print(f"{peer.ip}:{peer.port}")
     else:
         raise NotImplementedError(f"Unknown command {command}")
 

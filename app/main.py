@@ -65,6 +65,14 @@ def main():
         peers = Peer.list_from_bytes(response_dict["peers"])
         for peer in peers:
             print(f"{peer.ip}:{peer.port}")
+    elif command == "handshake":
+        torrent_file_path = sys.argv[2]
+        torrent = Torrent.from_file(torrent_file_path)
+
+        peer = Peer.from_str(sys.argv[3])
+        peer.connect()
+        incoming_handshake = peer.handshake(torrent)
+        print("Peer ID:", incoming_handshake.peer_id.hex())
     else:
         raise NotImplementedError(f"Unknown command {command}")
 
